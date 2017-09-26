@@ -613,3 +613,16 @@ Let's use form helpers to build this form in apps/web/templates/books/new.html.e
 %>
 ```
 We've added `<label>` tags for our form fields, and wrapped each field in a container `<div>` using Hanami's HTML builder helper.
+
+### Submitting Our Form
+
+To submit our form, we need yet another action. Let's create a Books::Create action:
+```ruby
+% bundle exec hanami generate action web books#create
+```
+
+This adds a new route to our app:
+```ruby
+# apps/web/config/routes.rb
+post '/books', to: 'books#create'
+```
