@@ -1,16 +1,24 @@
 require 'spec_helper'
-require_relative '../../../../apps/web/views/books/index'
+require_relative '../../../../apps/web/controllers/books/index'
 
-describe Web::Views::Books::Index do
-  let(:exposures) { Hash[foo: 'bar'] }
-  let(:template)  { Hanami::View::Template.new('apps/web/templates/books/index.html.erb') }
-  let(:view)      { Web::Views::Books::Index.new(template, exposures) }
-  let(:rendered)  { view.render }
+describe Web::Controllers::Books::Index do
+  let(:action) { Web::Controllers::Books::Index.new }
+  let(:params) { Hash[] }
+  let(:repository) { BookRepository.new }
 
-  it 'exposes #foo' do
-    skip 'This is an auto-generated test. Edit it and add your own tests.'
+  before do
+    repository.clear
 
-    # Example
-    view.foo.must_equal exposures.fetch(:foo)
+    @book = repository.create(title: 'TDD', author: 'Kent Beck')
+  end
+
+  it 'is successful' do
+    response = action.call(params)
+    response[0].must_equal 200
+  end
+
+  it 'exposes all books' do
+    action.call(params)
+    action.exposures[:books].must_equal [@book]
   end
 end
