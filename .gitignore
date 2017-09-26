@@ -110,3 +110,4 @@ fabric.properties
 .gitignore
 .idea
 vendor
+*.sqlite
