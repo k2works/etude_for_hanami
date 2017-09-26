@@ -125,3 +125,138 @@ We have to migrate our schema in the test database by running:
 
 As you can see, we have set HANAMI_ENV environment variable to instruct our command about the environment to use.
 
+##Following a Request
+
+Now we have a test, we can see it fail:
+
+```bash
+% rake test
+Run options: --seed 44759
+
+# Running:
+
+F
+
+Finished in 0.018611s, 53.7305 runs/s, 53.7305 assertions/s.
+
+  1) Failure:
+Homepage#test_0001_is successful [/Users/hanami/bookshelf/spec/web/features/visit_home_spec.rb:6]:
+Expected "<!DOCTYPE html>\n<html>\n  <head>\n    <title>Not Found</title>\n  </head>\n  <body>\n    <h1>Not Found</h1>\n  </body>\n</html>\n" to include "Bookshelf".
+
+1 runs, 1 assertions, 1 failures, 0 errors, 0 skips
+```
+
+Now let's make it pass. Lets add the code required to make this test pass, step-by-step.
+
+The first thing we need to add is a route:
+
+```ruby
+# apps/web/config/routes.rb
+root to: 'home#index'
+```
+
+We pointed our application's root URL to the index action of the home controller (see the routing guide for more information). Now we can create the index action.
+
+```ruby
+# apps/web/controllers/home/index.rb
+module Web::Controllers::Home
+  class Index
+    include Web::Action
+
+    def call(params)
+    end
+  end
+end
+```
+
+This is an empty action that doesn't implement any business logic. Each action has a corresponding view, which is a Ruby object and needs to be added in order to complete the request.
+
+```ruby
+# apps/web/views/home/index.rb
+module Web::Views::Home
+  class Index
+    include Web::View
+  end
+end
+```
+
+...which, in turn, is empty and does nothing more than render its template. This is the file we need to edit in order to make our test pass. All we need to do is add the bookshelf heading.
+
+```ruby
+# apps/web/templates/home/index.html.erb
+<h1>Bookshelf</h1>
+```
+
+Save your changes, run your test again and it now passes. Great!
+
+```bash
+Run options: --seed 19286
+
+# Running:
+
+.
+
+Finished in 0.011854s, 84.3600 runs/s, 168.7200 assertions/s.
+
+1 runs, 2 assertions, 0 failures, 0 errors, 0 skips
+```
+
+## Generating New Actions
+
+Let's use our new knowledge about the major Hanami components to add a new action. The purpose of our Bookshelf project is to manage books.
+
+We'll store books in our database and let the user manage them with our project. A first step would be to show a listing of all the books in our system.
+
+Let's write a new feature test describing what we want to achieve:
+
+```ruby
+# spec/web/features/list_books_spec.rb
+require 'features_helper'
+
+describe 'List books' do
+  it 'displays each book on the page' do
+    visit '/books'
+
+    within '#books' do
+      assert page.has_css?('.book', count: 2), 'Expected to find 2 books'
+    end
+  end
+end
+```
+
+The test is simple enough, and fails because the URL /books is not currently recognised in our application. We'll create a new controller action to fix that.
+
+### Hanami Generators
+Hanami ships with various generators to save on typing some of the code involved in adding new functionality. In our terminal, enter:
+```bash
+% bundle exec hanami generate action web books#index
+```
+This will generate a new action index in the books controller of the web application. It gives us an empty action, view and template; it also adds a default route to apps/web/config/routes.rb:
+```ruby
+get '/books', to: 'books#index'
+
+```
+If you're using ZSH, you may get zsh: no matches found: books#index. In that case, you can use: % hanami generate action web books/index
+
+To make our test pass, we need to edit our newly generated template file in apps/web/templates/books/index.html.erb:
+```haml
+<h1>Bookshelf</h1>
+<h2>All books</h2>
+
+<div id="books">
+  <div class="book">
+    <h3>Patterns of Enterprise Application Architecture</h3>
+    <p>by <strong>Martin Fowler</strong></p>
+  </div>
+
+  <div class="book">
+    <h3>Test Driven Development</h3>
+    <p>by <strong>Kent Beck</strong></p>
+  </div>
+</div>
+
+Save your changes and see your tests pass!
+
+The terminology of controllers and actions might be confusing, so let's clear this up: actions form the basis of our Hanami applications; controllers are mere modules that group several actions together. So while the "controller" is conceptually present in our project, in practice we only deal with actions.
+
+We've used a generator to create a new endpoint in our application. But one thing you may have noticed is that our new template contains the same <h1> as our home/index.html.erb template. Let's fix that.
