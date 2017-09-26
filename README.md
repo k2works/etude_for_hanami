@@ -585,3 +585,31 @@ get '/books/new', to: 'books#new'
 ```
 
 The interesting bit will be our new template, because we'll be using Hanami's form builder to construct a HTML form around our Book entity.
+
+### Using Form Helpers
+
+Let's use form helpers to build this form in apps/web/templates/books/new.html.erb:
+
+```ruby
+# apps/web/templates/books/new.html.erb
+<h2>Add book</h2>
+
+<%=
+  form_for :book, '/books' do
+    div class: 'input' do
+      label      :title
+      text_field :title
+    end
+
+    div class: 'input' do
+      label      :author
+      text_field :author
+    end
+
+    div class: 'controls' do
+      submit 'Create Book'
+    end
+  end
+%>
+```
+We've added `<label>` tags for our form fields, and wrapped each field in a container `<div>` using Hanami's HTML builder helper.
