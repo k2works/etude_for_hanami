@@ -307,3 +307,58 @@ create  spec/bookshelf/repositories/book_repository_spec.rb
 ```
 
 The generator gives us an entity, a repository, a migration, and accompanying test files.
+
+### Migrations To Change Our Database Schema
+Let's modify the generated migration to include title and author fields:
+
+```ruby
+# db/migrations/20161115110038_create_books.rb
+
+Hanami::Model.migration do
+  change do
+    create_table :books do
+      primary_key :id
+
+      column :title,  String, null: false
+      column :author, String, null: false
+
+      column :created_at, DateTime, null: false
+      column :updated_at, DateTime, null: false
+    end
+  end
+end
+```
+
+Hanami provides a DSL to describe changes to our database schema. You can read more about how migrations work in the migrations' guide.
+
+In this case, we define a new table with columns for each of our entities' attributes. Let's prepare our database for the development and test environments:
+
+```bash
+% bundle exec hanami db prepare
+% HANAMI_ENV=test bundle exec hanami db prepare
+```
+
+### Working With Entities
+An entity is something really close to a plain Ruby object. We should focus on the behaviors that we want from it and only then, how to save it.
+
+For now, we need to create simple entity class:
+
+```ruby
+# lib/bookshelf/entities/book.rb
+class Book < Hanami::Entity
+end
+```
+
+This class will generate getters and setters for each attribute which we pass to initialize params. We can verify it all works as expected with a unit test:
+
+```ruby
+# spec/bookshelf/entities/book_spec.rb
+require 'spec_helper'
+
+describe Book do
+  it 'can be initialized with attributes' do
+    book = Book.new(title: 'Refactoring')
+    book.title.must_equal 'Refactoring'
+  end
+end
+```
