@@ -125,7 +125,7 @@ We have to migrate our schema in the test database by running:
 
 As you can see, we have set HANAMI_ENV environment variable to instruct our command about the environment to use.
 
-##Following a Request
+## Following a Request
 
 Now we have a test, we can see it fail:
 
