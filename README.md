@@ -239,7 +239,7 @@ get '/books', to: 'books#index'
 If you're using ZSH, you may get zsh: no matches found: books#index. In that case, you can use: % hanami generate action web books/index
 
 To make our test pass, we need to edit our newly generated template file in apps/web/templates/books/index.html.erb:
-```haml
+```html
 <h1>Bookshelf</h1>
 <h2>All books</h2>
 
@@ -254,9 +254,32 @@ To make our test pass, we need to edit our newly generated template file in apps
     <p>by <strong>Kent Beck</strong></p>
   </div>
 </div>
-
+```
 Save your changes and see your tests pass!
 
 The terminology of controllers and actions might be confusing, so let's clear this up: actions form the basis of our Hanami applications; controllers are mere modules that group several actions together. So while the "controller" is conceptually present in our project, in practice we only deal with actions.
 
-We've used a generator to create a new endpoint in our application. But one thing you may have noticed is that our new template contains the same <h1> as our home/index.html.erb template. Let's fix that.
+We've used a generator to create a new endpoint in our application. But one thing you may have noticed is that our new template contains the same `<h1>` as our `home/index.html.erb` template. Let's fix that.
+
+## Layouts
+
+To avoid repeating ourselves in every single template, we can use a layout. Open up the file apps/web/templates/application.html.erb and edit it to look like this:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bookshelf</title>
+    <%= favicon %>
+  </head>
+  <body>
+    <h1>Bookshelf</h1>
+    <%= yield %>
+  </body>
+</html>
+```
+
+Now you can remove the duplicate lines from the other templates.
+
+A layout is like any other template, but it is used to wrap your regular templates. The yield line is replaced with the contents of our regular template. It's the perfect place to put our repeating headers and footers.
+
